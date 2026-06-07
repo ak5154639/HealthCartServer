@@ -16,6 +16,10 @@ go user model and see the role field.
 
 */
 
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+require('express-async-errors');
 const express = require("express");
 const app = express();
 require("dotenv").config();
@@ -23,6 +27,22 @@ const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+
+
+// Security headers
+app.use(helmet());
+
+// Gzip compression — this alone will speed up responses significantly
+app.use(compression());
+
+// Rate limiting — max 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', limiter);
+
 
 // Import Router
 const authRouter = require("./routes/auth");
